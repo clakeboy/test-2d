@@ -418,7 +418,7 @@
     },
     "connectedBody": null,
     "collideConnected": false,
-    "_distance": 1,
+    "_distance": 5.3,
     "_frequency": 0,
     "_dampingRatio": 0,
     "_id": "fdU/cjt81F758v/+2w65iO"
