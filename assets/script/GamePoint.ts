@@ -31,7 +31,7 @@ export default class NewClass extends cc.Component {
         point.node.setPosition(cc.v2(480,600));
         this.phy.addChild(point.node);
         point.done();
-        PoData.addPoint(point);
+        PoData.addPoint(point,true);
     }
 
     start () {

@@ -32,26 +32,29 @@ export default class PointRect extends cc.Component {
     constructor() {
         super();
         this.node = new cc.Node();
-        this.node.setContentSize(5,0);
+        this.node.setContentSize(5,1);
         this.node.color = cc.color(255,255,255,255);
         this.graphics = this.addComponent(cc.Graphics);
 
         // this._spr = this.addComponent(cc.Sprite);
         this._body = this.addComponent(cc.RigidBody);
         this._body.type = cc.RigidBodyType.Kinematic;
-        // this._coll = this.addComponent(cc.PhysicsBoxCollider);
-        // this._coll.sensor = true;
-        // this._coll.size = cc.size(5,0);
+        this._coll = this.addComponent(cc.PhysicsBoxCollider);
+        this._coll.sensor = true;
+        this._coll.size = cc.size(5,1);
 
         this._hook1 = this.addComponent(cc.DistanceJoint);
+        this._hook1.collideConnected = false;
         this._hook2 = this.addComponent(cc.DistanceJoint);
+        this._hook2.collideConnected = false;
     }
 
-    setSize(size: cc.Size) {
+    setSize(size: cc.Size,distance: number) {
         this.node.setContentSize(size);
         this._hook1.anchor = cc.v2(0,size.height/2);
         this._hook2.anchor = cc.v2(0,-size.height/2);
-
+        // this._hook1.distance = distance;
+        // this._hook2.distance = distance;
         this.graphics.clear();
         this.graphics.circle(this._hook1.anchor.x,this._hook1.anchor.y,5);
         this.graphics.fillColor = cc.Color.RED;

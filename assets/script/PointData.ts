@@ -12,9 +12,11 @@ let dynamicNodeList: Array<PointRect> = [];
  * 添加一个节点
  * @param po Point
  */
-export function addPoint(po: Point) {
+export function addPoint(po: Point,staticPoint: boolean = false) {
     allPointList[po.name] = po;
-    dynamicPointList.push(po);
+    if (!staticPoint) {
+        dynamicPointList.push(po);
+    }
 }
 /**
  * 添加一个连接块

@@ -84,8 +84,8 @@ export default class Point extends cc.Component {
             this.node.parent.addChild(rect.node);
             this.currentRect = rect;
 
-            this.node.parent.on('mousemove',this.nodeMove,this);
-            this.node.parent.on('mouseup',this.nodeEnd,this);
+            this.node.parent.on('mousemove',this.nodeMove);
+            this.node.parent.on('mouseup',this.nodeEnd);
         });
 
         //
@@ -96,6 +96,8 @@ export default class Point extends cc.Component {
                 if (this._parent.checkContact(po.name)) {
                     po.setFucos(true);
                     this.contactPoint = po;
+                    cc.log(this.contactPoint);
+                    cc.log(this);
                 }
             }
         };
@@ -136,16 +138,20 @@ export default class Point extends cc.Component {
         return true;
     }
 
-    nodeMove(e:cc.Event.EventMouse) {
+    nodeMove = (e:cc.Event.EventMouse) => {
         let v1: cc.Vec2 = e.getLocation();
         let v2: cc.Vec2 = cc.v2(this.node.getPosition());
+        this.calculateRect(v1,v2);
+    }
+
+    calculateRect(v1: cc.Vec2,v2: cc.Vec2) {
         let height: number = v1.sub(v2).mag();
         //取得两个向量的角度
         let radian: number = cc.misc.radiansToDegrees(v2.sub(v1).signAngle(cc.v2(0,1)));
         // cc.log(radian);
         let size: cc.Size = this.currentRect.node.getContentSize();
-        size.height = height;
-        this.currentRect.setSize(size);
+        size.height = height-(this.radius*.8*2);
+        this.currentRect.setSize(size,this.radius*.8);
         this.currentRect.node.angle = -radian;
         //取得两个向量的中心向量
         let centerVec: cc.Vec2 = v2.sub(v1).normalizeSelf().scaleSelf(cc.v2(height/2,height/2)).addSelf(v1);
@@ -153,34 +159,30 @@ export default class Point extends cc.Component {
         this.currentMoveNode.node.setPosition(v1);
     }
 
-    nodeEnd() {
-        this.node.parent.off('mousemove',this.nodeMove,this);
-        this.node.parent.off('mouseup',this.nodeEnd,this);
+    nodeEnd = () => {
+        this.node.parent.off('mousemove',this.nodeMove);
+        this.node.parent.off('mouseup',this.nodeEnd);
         //添加原始连接点到连接块
         this.currentRect._hook1.connectedBody = this._body;
+        // this.currentRect.node.convertToWorldSpace(this.currentRect._hook1.anchor);
         this.currentRect.leftPoint = this;
-        this.currentRect.done()
+        
         this.contactList.push(this.currentRect);
         PoData.addRectNode(this.currentRect);
         //添加对像连接点到连接块
-        if (this.contactPoint !== null) {
-            
+        if (this.currentMoveNode.contactPoint !== null) {
+            this.currentRect._hook2.connectedBody = this.currentMoveNode.contactPoint._body;
+            this.currentRect.RightPoint = this.currentMoveNode.contactPoint;
+            this.currentMoveNode.node.destroy();
+            PoData.ApplyDynamic();
         } else {
             this.currentRect._hook2.connectedBody = this.currentMoveNode._body;
             this.currentRect.RightPoint = this.currentMoveNode;
-            this.currentMoveNode.done();
             this.childList.push(this.currentMoveNode);
             PoData.addPoint(this.currentMoveNode);
+            this.currentMoveNode.done();
         }
+        this.currentRect.done()
+        // PoData.ApplyDynamic();
     }
-
-    // LIFE-CYCLE CALLBACKS:
-
-    // onLoad () {}
-
-    start () {
-        cc.log('start');
-    }
-
-    // update (dt) {}
 }
