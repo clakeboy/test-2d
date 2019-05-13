@@ -11,6 +11,8 @@
 // const {ccclass, property} = cc._decorator;
 
 // @ccclass
+import Point from './Point';
+
 export default class PointRect extends cc.Component {
     _body: cc.RigidBody = null;
 
@@ -23,6 +25,9 @@ export default class PointRect extends cc.Component {
     _hook2: cc.DistanceJoint = null;
 
     graphics: cc.Graphics = null;
+
+    leftPoint: Point = null;
+    RightPoint: Point = null;
 
     constructor() {
         super();

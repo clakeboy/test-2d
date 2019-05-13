@@ -9,8 +9,10 @@
 //  - [English] http://www.cocos2d-x.org/docs/creator/manual/en/scripting/life-cycle-callbacks.html
 
 import PointRect from './PointRect';
+import * as PoData from './PointData';
 
 // const {ccclass, property} = cc._decorator;
+
 // @ccclass
 export default class Point extends cc.Component {
 
@@ -20,47 +22,59 @@ export default class Point extends cc.Component {
 
     _coll: cc.PhysicsCircleCollider = null;
 
+    _index: number = 0;
+
     currentMoveNode: Point = null;
     currentRect: PointRect = null;
-    graphics: cc.Graphics = null;
-    _index: number = 0;
-    addHandler: Function = null;
+    //需要连接的点
+    contactPoint: Point = null;
 
-    constructor(name?:string,index:number = 0) {
+    graphics: cc.Graphics = null;
+    addHandler: Function = null;
+    //父节点
+    _parent: Point = null;
+    //所有子节点
+    childList: Array<Point> = [];
+    //所有连接节点
+    contactList: Array<PointRect> = [];
+    //点大小
+    radius: number = 20;
+
+    constructor(name:string,index:number = 0,parent?: Point) {
         super();
-        let radius: number = 20;
         this.name = name || index+'';
         this._index = index;
+        this._parent = parent;
+
         this.node = new cc.Node(name);
-        this.node.setContentSize(radius*2,radius*2);
+        this.node.setContentSize(this.radius*2,this.radius*2);
         this.node.color = cc.color(255,255,255,255);
         this.graphics = this.addComponent(cc.Graphics);
         this.graphics.fillColor = cc.Color.ORANGE;
-        this.graphics.circle(this.node.anchorX,this.node.anchorY,radius);
+        this.graphics.circle(this.node.anchorX,this.node.anchorY,this.radius);
         this.graphics.fill();
         this.graphics.moveTo(this.node.anchorX,this.node.anchorY);
-        this.graphics.lineTo(this.node.anchorX+radius,this.node.anchorY);
+        this.graphics.lineTo(this.node.anchorX+this.radius,this.node.anchorY);
         this.graphics.strokeColor = cc.Color.RED;
         this.graphics.stroke()
         // this._spr = this.addComponent(cc.Sprite);
+        //钢体
         this._body = this.addComponent(cc.RigidBody);
         this._body.type = cc.RigidBodyType.Kinematic;
         this._body.enabledContactListener = true;
         this._body.allowSleep = false;
+        //碰撞体
         this._coll = this.addComponent(cc.PhysicsCircleCollider);
         this._coll.sensor = true;
-        this._coll.radius = radius;
+        this._coll.radius = this.radius;
         this.addEvent();
-    }
-
-    onAdd(func: Function) {
-        this.addHandler = func;
     }
 
     addEvent () {
         this.node.on('mousedown',(e:cc.Event.EventMouse)=>{
             if (e.getButton() !== 0) return;
-            let po: Point = new Point(`${this.name}_${this._index+1}`,this._index+1);
+            e.stopPropagation();
+            let po: Point = new Point(`${this.name}_${this.childList.length+1}`,this.childList.length+1,this);
             po.node.setPosition(e.getLocation());
             this.currentMoveNode = po;
             this.node.parent.addChild(po.node);
@@ -77,10 +91,29 @@ export default class Point extends cc.Component {
         //
         this._body.onBeginContact = (phyCon:cc.PhysicsContact,self:cc.PhysicsCollider,other:cc.PhysicsCollider)=>{
             if (other instanceof cc.PhysicsCircleCollider) {
-                cc.log(other.node.name);
-                cc.log(other.node.getComponent(Point));
+                let po: Point = PoData.FindPoint(other.node.name);
+                if (!po) return;
+                if (this._parent.checkContact(po.name)) {
+                    po.setFucos(true);
+                    this.contactPoint = po;
+                }
             }
         };
+
+        this._body.onEndContact = (phyCon:cc.PhysicsContact,self:cc.PhysicsCollider,other:cc.PhysicsCollider)=>{
+            if (other instanceof cc.PhysicsCircleCollider) {
+                let po: Point = PoData.FindPoint(other.node.name);
+                if (!po) return;
+                po.setFucos(false);
+                this.contactPoint = null;
+            }
+        };
+    }
+
+    setFucos(flag: boolean) {
+        this.graphics.fillColor = flag?cc.Color.GREEN:cc.Color.ORANGE;
+        this.graphics.circle(this.node.anchorX,this.node.anchorY,this.radius);
+        this.graphics.fill();
     }
 
     setDynamic() {
@@ -92,6 +125,15 @@ export default class Point extends cc.Component {
     done() {
         this._body.allowSleep = true;
         this._body.onBeginContact = null;
+    }
+    //检查节点是否可以和节点连接
+    checkContact(name:string) {
+        if (this.name === name) return false;
+        if (this._parent && this._parent.name === name) return false;
+        if (this.childList.some((item:Point)=>{
+            return item.name === name;
+        })) return false;
+        return true;
     }
 
     nodeMove(e:cc.Event.EventMouse) {
@@ -114,12 +156,21 @@ export default class Point extends cc.Component {
     nodeEnd() {
         this.node.parent.off('mousemove',this.nodeMove,this);
         this.node.parent.off('mouseup',this.nodeEnd,this);
+        //添加原始连接点到连接块
         this.currentRect._hook1.connectedBody = this._body;
-        this.currentRect._hook2.connectedBody = this.currentMoveNode._body;
+        this.currentRect.leftPoint = this;
         this.currentRect.done()
-        this.currentMoveNode.done();
-        if (this.addHandler) {
-            this.addHandler(this.currentRect,this.currentMoveNode);
+        this.contactList.push(this.currentRect);
+        PoData.addRectNode(this.currentRect);
+        //添加对像连接点到连接块
+        if (this.contactPoint !== null) {
+            
+        } else {
+            this.currentRect._hook2.connectedBody = this.currentMoveNode._body;
+            this.currentRect.RightPoint = this.currentMoveNode;
+            this.currentMoveNode.done();
+            this.childList.push(this.currentMoveNode);
+            PoData.addPoint(this.currentMoveNode);
         }
     }
 
@@ -127,9 +178,9 @@ export default class Point extends cc.Component {
 
     // onLoad () {}
 
-    // start () {
-
-    // }
+    start () {
+        cc.log('start');
+    }
 
     // update (dt) {}
 }

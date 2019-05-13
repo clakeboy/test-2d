@@ -11,6 +11,7 @@
 const {ccclass, property} = cc._decorator;
 
 import Point from "./Point";
+import * as PoData from './PointData';
 
 @ccclass
 export default class NewClass extends cc.Component {
@@ -26,9 +27,11 @@ export default class NewClass extends cc.Component {
         cc.director.getPhysicsManager().debugDrawFlags = cc.PhysicsManager.DrawBits.e_jointBit |
             cc.PhysicsManager.DrawBits.e_shapeBit;
 
-        let point: Point = new Point();
+        let point: Point = new Point('root');
         point.node.setPosition(cc.v2(480,600));
         this.phy.addChild(point.node);
+        point.done();
+        PoData.addPoint(point);
     }
 
     start () {

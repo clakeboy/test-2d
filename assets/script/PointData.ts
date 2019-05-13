@@ -1,31 +1,61 @@
-// Learn TypeScript:
-//  - [Chinese] https://docs.cocos.com/creator/manual/zh/scripting/typescript.html
-//  - [English] http://www.cocos2d-x.org/docs/creator/manual/en/scripting/typescript.html
-// Learn Attribute:
-//  - [Chinese] https://docs.cocos.com/creator/manual/zh/scripting/reference/attributes.html
-//  - [English] http://www.cocos2d-x.org/docs/creator/manual/en/scripting/reference/attributes.html
-// Learn life-cycle callbacks:
-//  - [Chinese] https://docs.cocos.com/creator/manual/zh/scripting/life-cycle-callbacks.html
-//  - [English] http://www.cocos2d-x.org/docs/creator/manual/en/scripting/life-cycle-callbacks.html
+import Point from './Point';
+import PointRect from './PointRect';
 
-const {ccclass, property} = cc._decorator;
+let allPointList: Object = {};
 
-@ccclass
-export default class NewClass extends cc.Component {
+let allNodeList: Object = {};
 
-    @property(cc.Label)
-    label: cc.Label = null;
+let dynamicPointList: Array<Point> = [];
+let dynamicNodeList: Array<PointRect> = [];
 
-    @property
-    text: string = 'hello';
+/**
+ * 添加一个节点
+ * @param po Point
+ */
+export function addPoint(po: Point) {
+    allPointList[po.name] = po;
+    dynamicPointList.push(po);
+}
+/**
+ * 添加一个连接块
+ * @param rect PointRect
+ */
+export function addRectNode(rect: PointRect) {
+    allNodeList[rect.name] = rect;
+    dynamicNodeList.push(rect);
+}
 
-    // LIFE-CYCLE CALLBACKS:
-
-    // onLoad () {}
-
-    start () {
-
+/**
+ * 使用名称查找一个节点
+ * @param name string
+ */
+export function FindPoint(name: string) {
+    if (allPointList[name]) {
+        return allPointList[name];
+    } else {
+        return null;
     }
+}
 
-    // update (dt) {}
+/**
+ * 使用名称查找一个连接块
+ * @param name string
+ */
+export function FindRect(name: string) {
+    if (allNodeList[name]) {
+        return allNodeList[name];
+    } else {
+        return null;
+    }
+}
+/**
+ * 使所有静态的节点活动起来
+ */
+export function ApplyDynamic() {
+    dynamicNodeList.forEach((rect:PointRect)=>{
+        rect.setDynamic();
+    });
+    dynamicPointList.forEach((po:Point)=>{
+        po.setDynamic();
+    });
 }
