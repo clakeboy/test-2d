@@ -38,7 +38,7 @@ export default class Point extends cc.Component {
     //所有连接节点
     contactList: Array<PointRect> = [];
     //点大小
-    radius: number = 20;
+    radius: number = 10;
 
     constructor(name:string,index:number = 0,parent?: Point) {
         super();
@@ -49,6 +49,25 @@ export default class Point extends cc.Component {
         this.node = new cc.Node(name);
         this.node.setContentSize(this.radius*2,this.radius*2);
         this.node.color = cc.color(255,255,255,255);
+        
+        // this._spr = this.addComponent(cc.Sprite);
+        //钢体
+        this._body = this.addComponent(cc.RigidBody);
+        this._body.type = cc.RigidBodyType.Kinematic;
+        this._body.enabledContactListener = true;
+        this._body.allowSleep = false;
+        this._body.awakeOnLoad = true;
+        this._body.gravityScale = 100;
+        //碰撞体
+        this._coll = this.addComponent(cc.PhysicsCircleCollider);
+        this._coll.sensor = true;
+        this._coll.radius = this.radius;
+
+        this.draw();
+        this.addEvent();
+    }
+
+    draw() {
         this.graphics = this.addComponent(cc.Graphics);
         this.graphics.fillColor = cc.Color.ORANGE;
         this.graphics.circle(this.node.anchorX,this.node.anchorY,this.radius);
@@ -57,17 +76,6 @@ export default class Point extends cc.Component {
         this.graphics.lineTo(this.node.anchorX+this.radius,this.node.anchorY);
         this.graphics.strokeColor = cc.Color.RED;
         this.graphics.stroke()
-        // this._spr = this.addComponent(cc.Sprite);
-        //钢体
-        this._body = this.addComponent(cc.RigidBody);
-        this._body.type = cc.RigidBodyType.Kinematic;
-        this._body.enabledContactListener = true;
-        this._body.allowSleep = false;
-        //碰撞体
-        this._coll = this.addComponent(cc.PhysicsCircleCollider);
-        this._coll.sensor = true;
-        this._coll.radius = this.radius;
-        this.addEvent();
     }
 
     addEvent () {
@@ -124,6 +132,12 @@ export default class Point extends cc.Component {
         this._coll.apply();
     }
 
+    setStatic() {
+        this._body.type = cc.RigidBodyType.Static;
+        this._coll.sensor = false;
+        this._coll.apply();
+    }
+
     done() {
         this._body.allowSleep = true;
         this._body.onBeginContact = null;
@@ -148,11 +162,14 @@ export default class Point extends cc.Component {
         let height: number = v1.sub(v2).mag();
         //取得两个向量的角度
         let radian: number = cc.misc.radiansToDegrees(v2.sub(v1).signAngle(cc.v2(0,1)));
+        
         // cc.log(radian);
         let size: cc.Size = this.currentRect.node.getContentSize();
-        size.height = height-(this.radius*.8*2);
-        this.currentRect.setSize(size,this.radius*.8);
+        size.height = height;
+        this.currentRect.setSize(size);
         this.currentRect.node.angle = -radian;
+        this.currentRect._hook1.referenceAngle = -radian;
+        this.currentRect._hook2.referenceAngle = -radian;
         //取得两个向量的中心向量
         let centerVec: cc.Vec2 = v2.sub(v1).normalizeSelf().scaleSelf(cc.v2(height/2,height/2)).addSelf(v1);
         this.currentRect.node.setPosition(centerVec);
@@ -174,6 +191,7 @@ export default class Point extends cc.Component {
             this.currentRect._hook2.connectedBody = this.currentMoveNode.contactPoint._body;
             this.currentRect.RightPoint = this.currentMoveNode.contactPoint;
             this.currentMoveNode.node.destroy();
+            this.calculateRect(cc.v2(this.currentRect.RightPoint.node.getPosition()),cc.v2(this.node.getPosition()));
             PoData.ApplyDynamic();
         } else {
             this.currentRect._hook2.connectedBody = this.currentMoveNode._body;

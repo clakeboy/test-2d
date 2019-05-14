@@ -14,10 +14,12 @@ import Point from "./Point";
 import * as PoData from './PointData';
 
 @ccclass
-export default class NewClass extends cc.Component {
+export default class GamePoint extends cc.Component {
     @property(cc.Node)
     phy: cc.Node = null;
 
+    @property(cc.Prefab)
+    circle: cc.Prefab = null;
     
     currentMoveNode: Point = null;
     // LIFE-CYCLE CALLBACKS:
@@ -32,6 +34,14 @@ export default class NewClass extends cc.Component {
         this.phy.addChild(point.node);
         point.done();
         PoData.addPoint(point,true);
+
+        this.node.on('mousedown',(e: cc.Event.EventMouse)=>{
+            e.stopPropagation();
+            let node = cc.instantiate(this.circle);
+            node.group = 'ball';
+            node.parent = this.phy;
+            node.setPosition(e.getLocation())
+        })
     }
 
     start () {

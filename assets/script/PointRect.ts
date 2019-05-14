@@ -20,36 +20,46 @@ export default class PointRect extends cc.Component {
 
     _coll: cc.PhysicsBoxCollider = null;
 
-    _hook1: cc.DistanceJoint = null;
+    _hook1: cc.WeldJoint = null;
 
-    _hook2: cc.DistanceJoint = null;
+    _hook2: cc.WeldJoint = null;
 
     graphics: cc.Graphics = null;
 
     leftPoint: Point = null;
     RightPoint: Point = null;
 
+    width:number = 10;
+
     constructor() {
         super();
         this.node = new cc.Node();
-        this.node.setContentSize(5,1);
+        this.node.setContentSize(this.width,1);
         this.node.color = cc.color(255,255,255,255);
+        this.node.group = 'wall';
+
         this.graphics = this.addComponent(cc.Graphics);
 
         // this._spr = this.addComponent(cc.Sprite);
         this._body = this.addComponent(cc.RigidBody);
         this._body.type = cc.RigidBodyType.Kinematic;
+
         this._coll = this.addComponent(cc.PhysicsBoxCollider);
         this._coll.sensor = true;
-        this._coll.size = cc.size(5,1);
+        this._coll.size = cc.size(this.width,1);
 
-        this._hook1 = this.addComponent(cc.DistanceJoint);
+        this._hook1 = this.addComponent(cc.WeldJoint);
+        this._hook1.frequency = 0;
+        this._hook1[0] = 0;
         this._hook1.collideConnected = false;
-        this._hook2 = this.addComponent(cc.DistanceJoint);
+
+        this._hook2 = this.addComponent(cc.WeldJoint);
+        this._hook2.frequency = 0;
+        this._hook2[0] = 0;
         this._hook2.collideConnected = false;
     }
 
-    setSize(size: cc.Size,distance: number) {
+    setSize(size: cc.Size) {
         this.node.setContentSize(size);
         this._hook1.anchor = cc.v2(0,size.height/2);
         this._hook2.anchor = cc.v2(0,-size.height/2);
