@@ -57,7 +57,7 @@ export default class Point extends cc.Component {
         this._body.enabledContactListener = true;
         this._body.allowSleep = false;
         this._body.awakeOnLoad = true;
-        this._body.gravityScale = 100;
+        this._body.gravityScale = 1;
         //碰撞体
         this._coll = this.addComponent(cc.PhysicsCircleCollider);
         this._coll.sensor = true;
@@ -104,8 +104,6 @@ export default class Point extends cc.Component {
                 if (this._parent.checkContact(po.name)) {
                     po.setFucos(true);
                     this.contactPoint = po;
-                    cc.log(this.contactPoint);
-                    cc.log(this);
                 }
             }
         };

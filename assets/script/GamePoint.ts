@@ -20,9 +20,13 @@ export default class GamePoint extends cc.Component {
 
     @property(cc.Prefab)
     circle: cc.Prefab = null;
+
+    @property(cc.Graphics)
+    gra: cc.Graphics = null;
     
     currentMoveNode: Point = null;
     // LIFE-CYCLE CALLBACKS:
+    circleNumber: number = 0;
 
     onLoad () {
         cc.director.getPhysicsManager().enabled = true;
@@ -42,6 +46,41 @@ export default class GamePoint extends cc.Component {
             node.parent = this.phy;
             node.setPosition(e.getLocation())
         })
+
+        //测试角度变化
+        var radio: cc.Vec2 = cc.v2(0,100);
+        // var degree = 0;
+        // for (let i=0;i<8;i++) {
+        //     degree += 45;
+        //     radio = this.degreesToVectors(radio,degree);
+        //     this.draw(radio);
+        // }
+        // this.gra.circle(radio.x,radio.y,10);
+        // this.gra.fillColor = cc.color(255,255,100,255);
+        // this.gra.fill();
+        setTimeout(() => {
+            this.draw(this.degreesToVectors(cc.v2(100,0),this.circleNumber*45));
+        }, 500);
+    }
+
+    draw(radio: cc.Vec2) {
+        this.gra.circle(radio.x,radio.y,10);
+        this.gra.fillColor = cc.color(255,255,100,255);
+        this.gra.fill();
+        this.circleNumber++;
+        if (this.circleNumber < 8) {
+            setTimeout(() => {
+                this.draw(this.degreesToVectors(cc.v2(100,0),this.circleNumber*45));
+            }, 500);
+        }
+    }
+
+    degreesToVectors(start: cc.Vec2,degree:number) {
+        let radian = cc.misc.degreesToRadians(degree);
+        let des = start.rotate(radian);
+        cc.log(des,degree);
+        cc.log(this.node.convertToWorldSpaceAR(des))
+        return des;
     }
 
     start () {
