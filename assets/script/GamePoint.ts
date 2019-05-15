@@ -23,6 +23,9 @@ export default class GamePoint extends cc.Component {
 
     @property(cc.Graphics)
     gra: cc.Graphics = null;
+
+    @property(cc.Camera)
+    camera: cc.Camera = null;
     
     currentMoveNode: Point = null;
     // LIFE-CYCLE CALLBACKS:
@@ -49,18 +52,11 @@ export default class GamePoint extends cc.Component {
 
         //测试角度变化
         var radio: cc.Vec2 = cc.v2(0,100);
-        // var degree = 0;
-        // for (let i=0;i<8;i++) {
-        //     degree += 45;
-        //     radio = this.degreesToVectors(radio,degree);
-        //     this.draw(radio);
-        // }
-        // this.gra.circle(radio.x,radio.y,10);
-        // this.gra.fillColor = cc.color(255,255,100,255);
-        // this.gra.fill();
         setTimeout(() => {
             this.draw(this.degreesToVectors(cc.v2(100,0),this.circleNumber*45));
         }, 500);
+
+        
     }
 
     draw(radio: cc.Vec2) {
