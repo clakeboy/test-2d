@@ -44,19 +44,39 @@ export default class GamePoint extends cc.Component {
 
         this.node.on('mousedown',(e: cc.Event.EventMouse)=>{
             e.stopPropagation();
+            let camera = cc.Camera.findCamera(this.node);
+            let zoomPix = 1-camera.zoomRatio+1;
+            
+            let xy = e.getLocation();
+            let position = xy.add(camera.node.getPosition());
+            let zoomDiff = this.getCetnerPositionDiff(xy,camera.zoomRatio);
             let node = cc.instantiate(this.circle);
             node.group = 'ball';
             node.parent = this.phy;
-            node.setPosition(e.getLocation())
+            node.setPosition(position);
+            
+            cc.log("mouse position:",xy);
+            cc.log("ball position:",position);
+            cc.log("ball zoom:",camera.zoomRatio);
+            cc.log("ball zoom position:",position);
         })
 
         //测试角度变化
-        var radio: cc.Vec2 = cc.v2(0,100);
-        setTimeout(() => {
-            this.draw(this.degreesToVectors(cc.v2(100,0),this.circleNumber*45));
-        }, 500);
+        // var radio: cc.Vec2 = cc.v2(0,100);
+        // setTimeout(() => {
+        //     this.draw(this.degreesToVectors(cc.v2(100,0),this.circleNumber*45));
+        // }, 500);
 
         
+    }
+
+    getCetnerPositionDiff(position:cc.Vec2,zoom:number):cc.Vec2 {
+        let size = cc.winSize;
+        let posi = cc.v2(size.width/2,size.height/2);
+        let center = position.sub(posi);
+        let zoomCenter = center.mul(1-zoom+1);
+        
+        return zoomCenter.sub(center);
     }
 
     draw(radio: cc.Vec2) {

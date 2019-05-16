@@ -62,7 +62,7 @@ export default class Point extends cc.Component {
         this._coll = this.addComponent(cc.PhysicsCircleCollider);
         this._coll.sensor = true;
         this._coll.radius = this.radius;
-
+        
         this.draw();
         this.addEvent();
     }
@@ -83,12 +83,12 @@ export default class Point extends cc.Component {
             if (e.getButton() !== 0) return;
             e.stopPropagation();
             let po: Point = new Point(`${this.name}_${this.childList.length+1}`,this.childList.length+1,this);
-            po.node.setPosition(e.getLocation());
+            po.node.setPosition(this.node.position);
             this.currentMoveNode = po;
             this.node.parent.addChild(po.node);
 
             let rect: PointRect = new PointRect();
-            rect.node.setPosition(e.getLocation());
+            rect.node.setPosition(this.node.position);
             this.node.parent.addChild(rect.node);
             this.currentRect = rect;
 
@@ -151,7 +151,8 @@ export default class Point extends cc.Component {
     }
 
     nodeMove = (e:cc.Event.EventMouse) => {
-        let v1: cc.Vec2 = e.getLocation();
+        // cc.log(cc.Camera.findCamera(this.node).node.name);
+        let v1: cc.Vec2 = e.getLocation().addSelf(cc.Camera.findCamera(this.node).node.getPosition());
         let v2: cc.Vec2 = cc.v2(this.node.getPosition());
         this.calculateRect(v1,v2);
     }

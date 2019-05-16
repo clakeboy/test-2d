@@ -43,11 +43,12 @@ export default class PointRect extends cc.Component {
         // this._spr = this.addComponent(cc.Sprite);
         this._body = this.addComponent(cc.RigidBody);
         this._body.type = cc.RigidBodyType.Kinematic;
-
+        
         this._coll = this.addComponent(cc.PhysicsBoxCollider);
         this._coll.sensor = true;
         this._coll.size = cc.size(this.width,1);
-
+        this._coll.restitution = 2;
+        this._coll.offset
         this._hook1 = this.addComponent(cc.WeldJoint);
         this._hook1.frequency = 0;
         this._hook1[0] = 0;
