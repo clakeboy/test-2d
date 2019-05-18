@@ -35,30 +35,35 @@ export default class GamePoint extends cc.Component {
         cc.director.getPhysicsManager().enabled = true;
         cc.director.getPhysicsManager().debugDrawFlags = cc.PhysicsManager.DrawBits.e_jointBit |
             cc.PhysicsManager.DrawBits.e_shapeBit;
-
+        this.phy.setContentSize(cc.winSize.width*5,cc.winSize.height*5);
         let point: Point = new Point('root');
         point.node.setPosition(cc.v2(480,600));
         this.phy.addChild(point.node);
         point.done();
+        point.setStatic();
         PoData.addPoint(point,true);
 
-        this.node.on('mousedown',(e: cc.Event.EventMouse)=>{
+        this.phy.on('mousedown',(e: cc.Event.EventMouse)=>{
+            cc.log(this.node.name);
+            if (e.getButton() !== 0) {
+                return;
+            }
             e.stopPropagation();
-            let camera = cc.Camera.findCamera(this.node);
-            let zoomPix = 1-camera.zoomRatio+1;
-            
+            let camera = this.camera;
+            let outMat4 = new cc.Mat4(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+            camera.getWorldToCameraMatrix(outMat4)
+            let zoomV: cc.Vec2 = cc.v2(outMat4['m12'],outMat4['m13']);
             let xy = e.getLocation();
-            let position = xy.add(camera.node.getPosition());
-            let zoomDiff = this.getCetnerPositionDiff(xy,camera.zoomRatio);
+            let position = xy.sub(zoomV).divSelf(camera.zoomRatio);
+            // let zoomDiff = this.getCetnerPositionDiff(position,camera.zoomRatio);
             let node = cc.instantiate(this.circle);
             node.group = 'ball';
             node.parent = this.phy;
             node.setPosition(position);
+            cc.log("ball",position.x,position.y);
+            // node.setPosition(this.phy.convertToNodeSpaceAR(xy));
+            this.drawP(position);
             
-            cc.log("mouse position:",xy);
-            cc.log("ball position:",position);
-            cc.log("ball zoom:",camera.zoomRatio);
-            cc.log("ball zoom position:",position);
         })
 
         //测试角度变化
@@ -71,12 +76,19 @@ export default class GamePoint extends cc.Component {
     }
 
     getCetnerPositionDiff(position:cc.Vec2,zoom:number):cc.Vec2 {
-        let size = cc.winSize;
-        let posi = cc.v2(size.width/2,size.height/2);
-        let center = position.sub(posi);
-        let zoomCenter = center.mul(1-zoom+1);
+        return position.mulSelf(1-zoom+1);
+
+        // let center = position.sub(posi);
+        // let zoomCenter = center.mul(1-zoom+1);
         
-        return zoomCenter.sub(center);
+        // return position.add(position.normalize().mulSelf(1-zoom+1));
+    }
+
+    drawP(v: cc.Vec2) {
+        this.gra.clear();
+        this.gra.circle(v.x,v.y,10);
+        this.gra.fillColor = cc.color(255,255,100,255);
+        this.gra.fill();
     }
 
     draw(radio: cc.Vec2) {

@@ -33,28 +33,28 @@ export default class NewClass extends cc.Component {
     }
 
     startMoveWorld(e: cc.Event.EventMouse) {
+        cc.log(e);
+        if (e.getButton() !== 2) {
+            return;
+        }
         this.node.on('mousemove',this.moveWorld,this);
         this.node.on('mouseup',this.endMoveWorld,this);
         this.cameraStart = cc.v2(this.camera.node.getPosition());
         this.mouseStart = e.getLocation();
-        // let gra = this.getComponent(cc.Graphics);
-        // let zoom = this.camera.getWorldToCameraPoint(e.getLocation(),cc.v2());
-        // gra.circle(zoom.x,zoom.y,20);
-        // gra.fill();
     }
 
     moveWorld(e: cc.Event.EventMouse) {
         let current = e.getLocation();
-
-        let move = this.cameraStart.add(this.mouseStart.sub(current));
+        let move = this.cameraStart.add(this.mouseStart.sub(current).divSelf(this.camera.zoomRatio));
         this.camera.node.setPosition(move);
+        // this.drawPoint(move);
     }
 
     endMoveWorld(e: cc.Event.EventMouse) {
         this.node.off('mousemove',this.moveWorld,this);
         this.node.off('mouseup',this.endMoveWorld,this);
-        // let gra = this.getComponent(cc.Graphics);
-        // gra.clear();   
+        let gra = this.getComponent(cc.Graphics);
+        gra.clear();   
     }
 
     zoomWorld(e: cc.Event.EventMouse) {

@@ -152,7 +152,15 @@ export default class Point extends cc.Component {
 
     nodeMove = (e:cc.Event.EventMouse) => {
         // cc.log(cc.Camera.findCamera(this.node).node.name);
-        let v1: cc.Vec2 = e.getLocation().addSelf(cc.Camera.findCamera(this.node).node.getPosition());
+        let outMat4 = new cc.Mat4(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+        let camera = cc.Camera.findCamera(this.node.parent);
+        camera.getWorldToCameraMatrix(outMat4);
+        let zoomV: cc.Vec2 = cc.v2(outMat4['m12'],outMat4['m13']);
+        
+        let xy = e.getLocation();
+        let position = xy.sub(zoomV).divSelf(camera.zoomRatio);
+        // let v1: cc.Vec2 = e.getLocation().addSelf(cc.Camera.findCamera(this.node).node.getPosition());
+        let v1: cc.Vec2 = position;
         let v2: cc.Vec2 = cc.v2(this.node.getPosition());
         this.calculateRect(v1,v2);
     }
