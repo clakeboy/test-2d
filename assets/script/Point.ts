@@ -178,7 +178,7 @@ export default class Point extends cc.Component {
         this.currentRect._hook1.referenceAngle = -radian;
         this.currentRect._hook2.referenceAngle = -radian;
         //取得两个向量的中心向量
-        let centerVec: cc.Vec2 = v2.sub(v1).normalizeSelf().scaleSelf(cc.v2(height/2,height/2)).addSelf(v1);
+        let centerVec: cc.Vec2 = v2.sub(v1).normalizeSelf().scaleSelf(cc.v2(height*.5,height*.5)).addSelf(v1);
         this.currentRect.node.setPosition(centerVec);
         this.currentMoveNode.node.setPosition(v1);
     }

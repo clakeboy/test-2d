@@ -35,7 +35,10 @@ export default class GamePoint extends cc.Component {
         cc.director.getPhysicsManager().enabled = true;
         cc.director.getPhysicsManager().debugDrawFlags = cc.PhysicsManager.DrawBits.e_jointBit |
             cc.PhysicsManager.DrawBits.e_shapeBit;
+        let canvas = this.getComponent(cc.Canvas)
+        canvas.designResolution = cc.winSize;
         this.phy.setContentSize(cc.winSize.width*5,cc.winSize.height*5);
+        this.phy.setPosition(-(cc.winSize.width/2),-(cc.winSize.height/2));
         let point: Point = new Point('root');
         point.node.setPosition(cc.v2(480,600));
         this.phy.addChild(point.node);
@@ -44,7 +47,6 @@ export default class GamePoint extends cc.Component {
         PoData.addPoint(point,true);
 
         this.phy.on('mousedown',(e: cc.Event.EventMouse)=>{
-            cc.log(this.node.name);
             if (e.getButton() !== 0) {
                 return;
             }
@@ -55,15 +57,13 @@ export default class GamePoint extends cc.Component {
             let zoomV: cc.Vec2 = cc.v2(outMat4['m12'],outMat4['m13']);
             let xy = e.getLocation();
             let position = xy.sub(zoomV).divSelf(camera.zoomRatio);
-            // let zoomDiff = this.getCetnerPositionDiff(position,camera.zoomRatio);
+
             let node = cc.instantiate(this.circle);
             node.group = 'ball';
             node.parent = this.phy;
             node.setPosition(position);
-            cc.log("ball",position.x,position.y);
-            // node.setPosition(this.phy.convertToNodeSpaceAR(xy));
+        
             this.drawP(position);
-            
         })
 
         //测试角度变化
